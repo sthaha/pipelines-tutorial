@@ -110,8 +110,9 @@ demo.logs() {
 demo.run() {
   TKN pipeline start petclinic-deploy-pipeline \
     -r app-git=petclinic-git \
-    -r app-image=petclinic-image \
-    -s pipeline
+    -r app-image=petclinic-image
+
+    #-s pipeline
 
   sleep 5
   demo.logs

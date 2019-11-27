@@ -12,6 +12,7 @@ spec:
   - name: build
     taskRef:
       name: s2i-java-8
+      kind: ClusterTask
     params:
       - name: TLSVERIFY
         value: "false"
@@ -25,6 +26,7 @@ spec:
   - name: deploy
     taskRef:
       name: openshift-client
+      kind: ClusterTask
     runAfter:
       - build
     params:
