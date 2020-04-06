@@ -4,14 +4,13 @@ metadata:
   name: build-and-deploy
 spec:
   resources:
-    - name: api-repo
-      type: git
-    - name: api-image
-      type: image
-    - name: ui-repo
-      type: git
-    - name: ui-image
-      type: image
+    # api resources
+    - { name: api-repo,  type: git }
+    - { name: api-image, type: image }
+
+    # ui resources
+    - { name: ui-repo,   type: git }
+    - { name: ui-image,  type: image }
 
   tasks:
     - name: build-api
@@ -20,22 +19,18 @@ spec:
         kind: ClusterTask
       resources:
         inputs:
-          - name: source
-            resource: api-repo
+          - { name: source, resource: api-repo }
         outputs:
-          - name: image
-            resource: api-image
+          - { name: image, resource: api-image }
       params:
-        - name: TLSVERIFY
-          value: "false"
+        - { name: TLSVERIFY, value: "false" }
 
     - name: apply-api-manifests
       taskRef:
         name: apply-manifests
       resources:
         inputs:
-          - name: source
-            resource: api-repo
+          - { name: source, resource: api-repo }
       runAfter:
         - build-api
 
@@ -44,11 +39,13 @@ spec:
         name: update-deployment
       resources:
         inputs:
-          - name: image
-            resource: api-image
+          - { name: image, resource: api-image }
       params:
-        - name: deployment
-          value: "api"
+        - { name: deployment, value: vote-api }
+      conditions:
+        - conditionRef: deployment-exists
+          params:
+            -  {  name: app, value: vote-api }
       runAfter:
         - apply-api-manifests
 
@@ -58,22 +55,18 @@ spec:
         kind: ClusterTask
       resources:
         inputs:
-          - name: source
-            resource: ui-repo
+          - { name: source, resource: ui-repo }
         outputs:
-          - name: image
-            resource: ui-image
+          - { name: image, resource: ui-image }
       params:
-        - name: TLSVERIFY
-          value: "false"
+        - { name: TLSVERIFY, value: "false" }
 
     - name: apply-ui-manifests
       taskRef:
         name: apply-manifests
       resources:
         inputs:
-          - name: source
-            resource: ui-repo
+          - { name: source, resource: ui-repo }
       runAfter:
         - build-ui
         - update-api-image
@@ -83,10 +76,15 @@ spec:
         name: update-deployment
       resources:
         inputs:
-          - name: image
-            resource: ui-image
+          - { name: image, resource: ui-image }
       params:
-        - name: deployment
-          value: "ui"
+        - { name: deployment, value: vote-ui }
       runAfter:
         - apply-ui-manifests
+      conditions:
+        - conditionRef: deployment-exists
+          params:
+            -  {  name: app, value: vote-api }
+        - conditionRef: deployment-exists
+          params:
+            -  {  name: app, value: vote-ui }

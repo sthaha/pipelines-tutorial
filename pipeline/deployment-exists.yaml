@@ -1,0 +1,11 @@
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Condition
+metadata:
+  name: deployment-exists
+spec:
+  params:
+    - name: app
+  check:
+    image: quay.io/openshift/origin-cli:latest
+    script: oc get deployment $(params.app) -o name
